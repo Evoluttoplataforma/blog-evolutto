@@ -1,0 +1,104 @@
+---
+import BlogLayout from '../../layouts/BlogLayout.astro';
+import DemoCard from '../../components/blog/DemoCard.astro';
+import { getAllDemos } from '../../data/demos';
+
+const demos = getAllDemos();
+---
+
+<BlogLayout
+  title="Demonstrações"
+  description="Veja na prática como o Evolutto pode transformar sua consultoria. Assista demonstrações completas da plataforma."
+  currentPath="/blog/demonstracoes"
+>
+  <section class="demos-page">
+    <div class="demos-header">
+      <nav class="breadcrumb">
+        <a href="/blog">Blog</a>
+        <span>/</span>
+        <span>Demonstrações</span>
+      </nav>
+      <h1>Demonstrações</h1>
+      <p>Veja na prática como o Evolutto transforma consultorias. Assista demonstrações completas da plataforma.</p>
+    </div>
+
+    <div class="demos-grid">
+      {demos.map((demo) => (
+        <DemoCard demo={demo} />
+      ))}
+    </div>
+  </section>
+</BlogLayout>
+
+<style>
+  .demos-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  .demos-header {
+    margin-bottom: 40px;
+  }
+
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    font-size: 0.875rem;
+    color: #64748b;
+  }
+
+  .breadcrumb a {
+    color: #0ea5e9;
+    text-decoration: none;
+  }
+
+  .breadcrumb a:hover {
+    text-decoration: underline;
+  }
+
+  .demos-header h1 {
+    margin: 0 0 12px;
+    font-size: 2rem;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+  }
+
+  .demos-header p {
+    margin: 0;
+    font-size: 1.0625rem;
+    color: #64748b;
+    line-height: 1.6;
+    max-width: 600px;
+  }
+
+  .demos-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+
+  @media (max-width: 1024px) {
+    .demos-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .demos-page {
+      padding: 32px 16px 64px;
+    }
+
+    .demos-header h1 {
+      font-size: 1.75rem;
+    }
+
+    .demos-grid {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+  }
+</style>

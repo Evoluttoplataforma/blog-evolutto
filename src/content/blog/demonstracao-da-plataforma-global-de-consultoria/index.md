@@ -1,0 +1,6 @@
+---
+title: "Demonstração da plataforma"
+date: 2023-10-30
+---
+
+\[vc\_row\]\[vc\_column width="1/1"\]\[vc\_raw\_html\]JTNDaWZyYW1lJTIwd2lkdGglM0QlMjIxMjQ1JTIyJTIwaGVpZ2h0JTNEJTIyNzAwJTIyJTIwc3JjJTNEJTIyaHR0cHMlM0ElMkYlMkZ3d3cueW91dHViZS5jb20lMkZlbWJlZCUyRmVvRFVadzI0blNzJTIyJTIwdGl0bGUlM0QlMjJEZW1vbnN0cmElQzMlQTclQzMlQTNvJTIwRXZvbHV0dG8lMjAtJTIwR3JhdmElQzMlQTclQzMlQTNvJTIyJTIwZnJhbWVib3JkZXIlM0QlMjIwJTIyJTIwYWxsb3clM0QlMjJhY2NlbGVyb21ldGVyJTNCJTIwYXV0b3BsYXklM0IlMjBjbGlwYm9hcmQtd3JpdGUlM0IlMjBlbmNyeXB0ZWQtbWVkaWElM0IlMjBneXJvc2NvcGUlM0IlMjBwaWN0dXJlLWluLXBpY3R1cmUlM0IlMjB3ZWItc2hhcmUlMjIlMjBhbGxvd2Z1bGxzY3JlZW4lM0UlM0MlMkZpZnJhbWUlM0U=\[/vc\_raw\_html\]\[/vc\_column\]\[/vc\_row\]

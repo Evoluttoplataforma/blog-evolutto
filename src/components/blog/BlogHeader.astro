@@ -1,0 +1,346 @@
+---
+import BlogMobileMenu from './BlogMobileMenu.jsx';
+import BlogSearch from './BlogSearch.jsx';
+
+interface Props {
+  currentPath?: string;
+}
+
+const { currentPath = '' } = Astro.props;
+
+const navLinks = [
+  { href: '/', label: 'Blog' },
+  { href: '/categoria/marketing', label: 'Marketing' },
+  { href: '/categoria/vendas', label: 'Vendas' },
+  { href: '/categoria/gestao', label: 'Gestao' },
+];
+
+const recursosDropdown = {
+  label: 'Recursos Gratuitos',
+  items: [
+    { href: '/recursos-gratuitos/demonstracoes/marketing', label: 'Demonstrações de Marketing' },
+    { href: '/recursos-gratuitos/demonstracoes/vendas', label: 'Demonstrações de Vendas' },
+    { href: '/recursos-gratuitos/demonstracoes/plataforma', label: 'Demonstrações da Plataforma' },
+    { href: '/recursos-gratuitos/ferramentas-gratuitas', label: 'Ferramentas Gratuitas' },
+  ],
+};
+
+const actionLinks = {
+  conheca: { href: 'https://evolutto.com.br', label: 'Conheca a Evolutto' },
+  login: { href: 'https://app.evolutto.com.br', label: 'Login Plataforma' },
+};
+---
+
+<header class="blog-header" id="blog-header">
+  <div class="header-container">
+    <!-- Logo -->
+    <a href="/" class="header-logo" aria-label="Evolutto Blog">
+      <img
+        src="/images/logo-evolutto.png"
+        alt="Evolutto"
+        width="140"
+        height="40"
+        loading="eager"
+      />
+    </a>
+
+    <!-- Desktop Navigation -->
+    <nav class="header-nav" aria-label="Navegacao principal">
+      <ul class="nav-list">
+        {navLinks.map((link) => (
+          <li>
+            <a
+              href={link.href}
+              class:list={['nav-link', { active: currentPath.startsWith(link.href) }]}
+              target={link.external ? '_blank' : undefined}
+              rel={link.external ? 'noopener noreferrer' : undefined}
+            >
+              {link.label}
+              {link.external && (
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                  <polyline points="15 3 21 3 21 9"></polyline>
+                  <line x1="10" y1="14" x2="21" y2="3"></line>
+                </svg>
+              )}
+            </a>
+          </li>
+        ))}
+
+        <!-- Recursos Gratuitos Dropdown -->
+        <li class="nav-dropdown">
+          <button
+            class:list={['nav-link dropdown-trigger', { active: currentPath.startsWith('/recursos-gratuitos') }]}
+            aria-expanded="false"
+            aria-haspopup="true"
+          >
+            {recursosDropdown.label}
+            <svg class="dropdown-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+          <div class="dropdown-menu" role="menu">
+            {recursosDropdown.items.map((item) => (
+              <a href={item.href} class="dropdown-item" role="menuitem">
+                {item.label}
+              </a>
+            ))}
+          </div>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Actions -->
+    <div class="header-actions">
+      <BlogSearch client:load />
+
+      <a href={actionLinks.login.href} class="header-login" target="_blank" rel="noopener noreferrer">
+        {actionLinks.login.label}
+      </a>
+
+      <a href={actionLinks.conheca.href} class="header-cta" target="_blank" rel="noopener noreferrer">
+        {actionLinks.conheca.label}
+      </a>
+
+      <!-- Mobile Menu Toggle -->
+      <BlogMobileMenu client:load navLinks={navLinks} actionLinks={actionLinks} recursosDropdown={recursosDropdown} currentPath={currentPath} />
+    </div>
+  </div>
+</header>
+
+<style>
+  .blog-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: var(--z-sticky);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border-light);
+    transition: all var(--transition-base);
+  }
+
+  .blog-header.scrolled {
+    box-shadow: var(--shadow-md);
+  }
+
+  .header-container {
+    max-width: var(--container-xl);
+    margin: 0 auto;
+    padding: 0 var(--space-4);
+    height: var(--header-height-mobile);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+  }
+
+  @media (min-width: 768px) {
+    .header-container {
+      padding: 0 var(--space-6);
+      height: var(--header-height);
+    }
+  }
+
+  .header-logo {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+  }
+
+  .header-logo img {
+    height: 32px;
+    width: auto;
+    object-fit: contain;
+  }
+
+  @media (min-width: 768px) {
+    .header-logo img {
+      height: 40px;
+    }
+  }
+
+  .header-nav {
+    display: none;
+  }
+
+  @media (min-width: 1024px) {
+    .header-nav {
+      display: block;
+      flex: 1;
+      margin: 0 var(--space-8);
+    }
+  }
+
+  .nav-list {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    color: var(--text-secondary);
+    text-decoration: none;
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+  }
+
+  .nav-link:hover {
+    color: var(--color-primary-600);
+    background: var(--color-primary-50);
+  }
+
+  .nav-link.active {
+    color: var(--color-primary-600);
+    background: var(--color-primary-50);
+  }
+
+  .nav-link svg {
+    opacity: 0.6;
+  }
+
+  /* Dropdown styles */
+  .nav-dropdown {
+    position: relative;
+  }
+
+  .dropdown-trigger {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+  }
+
+  .dropdown-arrow {
+    transition: transform var(--transition-fast);
+  }
+
+  .nav-dropdown:hover .dropdown-arrow,
+  .nav-dropdown:focus-within .dropdown-arrow {
+    transform: rotate(180deg);
+  }
+
+  .dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 260px;
+    padding: var(--space-2);
+    background: #fff;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(8px);
+    transition: all var(--transition-fast);
+    z-index: 100;
+  }
+
+  .nav-dropdown:hover .dropdown-menu,
+  .nav-dropdown:focus-within .dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  .dropdown-item {
+    display: block;
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    color: var(--text-secondary);
+    text-decoration: none;
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+  }
+
+  .dropdown-item:hover {
+    color: var(--color-primary-600);
+    background: var(--color-primary-50);
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .header-login {
+    display: none;
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    color: var(--text-secondary);
+    text-decoration: none;
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+  }
+
+  .header-login:hover {
+    color: var(--color-primary-600);
+    background: var(--color-primary-50);
+  }
+
+  @media (min-width: 1024px) {
+    .header-login {
+      display: inline-flex;
+    }
+  }
+
+  .header-cta {
+    display: none;
+    padding: var(--space-2) var(--space-4);
+    font-size: var(--text-sm);
+    font-weight: var(--font-semibold);
+    color: var(--text-inverse);
+    background: var(--color-primary-500);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    white-space: nowrap;
+    transition: all var(--transition-fast);
+  }
+
+  .header-cta:hover {
+    background: var(--color-primary-600);
+    transform: translateY(-1px);
+  }
+
+  @media (min-width: 768px) {
+    .header-cta {
+      display: inline-flex;
+    }
+  }
+</style>
+
+<script>
+  // Add scroll behavior to header
+  const header = document.getElementById('blog-header');
+  let lastScroll = 0;
+
+  function handleScroll() {
+    const currentScroll = window.scrollY;
+
+    if (currentScroll > 50) {
+      header?.classList.add('scrolled');
+    } else {
+      header?.classList.remove('scrolled');
+    }
+
+    lastScroll = currentScroll;
+  }
+
+  window.addEventListener('scroll', handleScroll, { passive: true });
+  handleScroll();
+</script>

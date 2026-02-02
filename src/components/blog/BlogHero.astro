@@ -1,0 +1,316 @@
+---
+interface Props {
+  title?: string;
+  subtitle?: string;
+  ctaText?: string;
+  ctaUrl?: string;
+  showIllustration?: boolean;
+}
+
+const {
+  title = 'Blog Evolutto',
+  subtitle = 'Conteudos para impulsionar sua consultoria e acelerar resultados',
+  ctaText = 'Conheca a Evolutto',
+  ctaUrl = 'https://evolutto.com.br',
+  showIllustration = true,
+} = Astro.props;
+---
+
+<section class="blog-hero">
+  <div class="hero-container">
+    <div class="hero-content">
+      <h1 class="hero-title">{title}</h1>
+      <p class="hero-subtitle">{subtitle}</p>
+      {ctaText && ctaUrl && (
+        <a href={ctaUrl} class="hero-cta" target="_blank" rel="noopener noreferrer">
+          {ctaText}
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </a>
+      )}
+    </div>
+
+    {showIllustration && (
+      <div class="hero-illustration">
+        <div class="illustration-shapes">
+          <div class="shape shape-1"></div>
+          <div class="shape shape-2"></div>
+          <div class="shape shape-3"></div>
+          <div class="shape shape-4"></div>
+        </div>
+        <div class="illustration-icons">
+          <div class="float-icon icon-1">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+              <path d="M2 17l10 5 10-5"></path>
+              <path d="M2 12l10 5 10-5"></path>
+            </svg>
+          </div>
+          <div class="float-icon icon-2">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+              <line x1="9" y1="9" x2="9.01" y2="9"></line>
+              <line x1="15" y1="9" x2="15.01" y2="9"></line>
+            </svg>
+          </div>
+          <div class="float-icon icon-3">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+          </div>
+          <div class="float-icon icon-4">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+    )}
+  </div>
+</section>
+
+<style>
+  .blog-hero {
+    position: relative;
+    background: linear-gradient(135deg, var(--color-primary-500) 0%, var(--color-primary-700) 100%);
+    overflow: hidden;
+    padding-top: calc(var(--header-height-mobile) + var(--space-8));
+    padding-bottom: var(--space-12);
+  }
+
+  @media (min-width: 768px) {
+    .blog-hero {
+      padding-top: calc(var(--header-height) + var(--space-12));
+      padding-bottom: var(--space-16);
+    }
+  }
+
+  .hero-container {
+    max-width: var(--container-xl);
+    margin: 0 auto;
+    padding: 0 var(--space-4);
+    display: grid;
+    gap: var(--space-8);
+    align-items: center;
+  }
+
+  @media (min-width: 768px) {
+    .hero-container {
+      padding: 0 var(--space-6);
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-12);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .hero-container {
+      padding: 0 var(--space-8);
+    }
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+  }
+
+  @media (min-width: 768px) {
+    .hero-content {
+      text-align: left;
+    }
+  }
+
+  .hero-title {
+    margin: 0 0 var(--space-4);
+    font-size: var(--text-4xl);
+    font-weight: var(--font-extrabold);
+    color: var(--text-inverse);
+    line-height: var(--leading-tight);
+  }
+
+  @media (min-width: 768px) {
+    .hero-title {
+      font-size: var(--text-5xl);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .hero-title {
+      font-size: var(--text-6xl);
+    }
+  }
+
+  .hero-subtitle {
+    margin: 0 0 var(--space-6);
+    font-size: var(--text-lg);
+    color: rgba(255, 255, 255, 0.9);
+    line-height: var(--leading-relaxed);
+    max-width: 500px;
+  }
+
+  @media (min-width: 768px) {
+    .hero-subtitle {
+      font-size: var(--text-xl);
+    }
+  }
+
+  @media (max-width: 767px) {
+    .hero-subtitle {
+      margin-left: auto;
+      margin-right: auto;
+    }
+  }
+
+  .hero-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-6);
+    font-size: var(--text-base);
+    font-weight: var(--font-semibold);
+    color: var(--color-primary-600);
+    background: var(--text-inverse);
+    border-radius: var(--radius-full);
+    text-decoration: none;
+    transition: all var(--transition-base);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .hero-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-xl);
+  }
+
+  .hero-cta svg {
+    transition: transform var(--transition-fast);
+  }
+
+  .hero-cta:hover svg {
+    transform: translateX(4px);
+  }
+
+  .hero-illustration {
+    display: none;
+    position: relative;
+    height: 300px;
+  }
+
+  @media (min-width: 768px) {
+    .hero-illustration {
+      display: block;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .hero-illustration {
+      height: 350px;
+    }
+  }
+
+  .illustration-shapes {
+    position: absolute;
+    inset: 0;
+  }
+
+  .shape {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .shape-1 {
+    width: 200px;
+    height: 200px;
+    top: 0;
+    right: 10%;
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .shape-2 {
+    width: 120px;
+    height: 120px;
+    bottom: 20%;
+    right: 30%;
+    animation: float 8s ease-in-out infinite reverse;
+  }
+
+  .shape-3 {
+    width: 80px;
+    height: 80px;
+    top: 40%;
+    left: 10%;
+    animation: float 5s ease-in-out infinite;
+  }
+
+  .shape-4 {
+    width: 60px;
+    height: 60px;
+    bottom: 10%;
+    left: 30%;
+    animation: float 7s ease-in-out infinite reverse;
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0) scale(1);
+    }
+    50% {
+      transform: translateY(-20px) scale(1.05);
+    }
+  }
+
+  .illustration-icons {
+    position: absolute;
+    inset: 0;
+  }
+
+  .float-icon {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    color: var(--color-primary-500);
+  }
+
+  .icon-1 {
+    top: 10%;
+    right: 20%;
+    animation: floatIcon 4s ease-in-out infinite;
+  }
+
+  .icon-2 {
+    top: 50%;
+    right: 5%;
+    animation: floatIcon 5s ease-in-out infinite 0.5s;
+  }
+
+  .icon-3 {
+    bottom: 20%;
+    right: 35%;
+    animation: floatIcon 4.5s ease-in-out infinite 1s;
+  }
+
+  .icon-4 {
+    top: 30%;
+    left: 20%;
+    animation: floatIcon 5.5s ease-in-out infinite 0.3s;
+  }
+
+  @keyframes floatIcon {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-15px);
+    }
+  }
+</style>

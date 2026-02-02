@@ -1,0 +1,39 @@
+---
+import BlogLayout from '../../../../layouts/BlogLayout.astro';
+import ResourceHero from '../../../../components/recursos/ResourceHero.astro';
+import ResourceGrid from '../../../../components/recursos/ResourceGrid';
+import { resourcePageConfigs } from '../../../../data/freeResources';
+import { getPlatformDemos } from '../../../../data/demosPlatform';
+
+const config = resourcePageConfigs.plataforma;
+const resources = getPlatformDemos();
+
+const breadcrumbs = [
+  { label: 'Home', href: '/' },
+  { label: 'Recursos Gratuitos', href: '/recursos-gratuitos' },
+  { label: 'Demonstrações da Plataforma' },
+];
+---
+
+<BlogLayout
+  title="Demonstrações da Plataforma"
+  description={config.description}
+  currentPath="/recursos-gratuitos/demonstracoes/plataforma"
+>
+  <ResourceHero
+    breadcrumbs={breadcrumbs}
+    eyebrow={config.eyebrow}
+    title={config.title}
+    description={config.description}
+    ctaPrimary={config.ctaPrimary}
+    ctaSecondary={config.ctaSecondary}
+    heroImage={config.heroImage}
+  />
+
+  <ResourceGrid
+    client:load
+    resources={resources}
+    categories={config.categories}
+    basePath={config.basePath}
+  />
+</BlogLayout>

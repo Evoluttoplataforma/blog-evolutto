@@ -1,0 +1,119 @@
+---
+import PostCard from './PostCard.astro';
+
+interface Post {
+  title: string;
+  slug: string;
+  excerpt?: string;
+  coverImage?: string;
+  category?: string;
+  categorySlug?: string;
+  date?: Date;
+  readTime?: number;
+}
+
+interface Props {
+  posts: Post[];
+  title?: string;
+  showLoadMore?: boolean;
+}
+
+const { posts, title, showLoadMore = false } = Astro.props;
+---
+
+<section class="post-grid-section">
+  {title && (
+    <h2 class="section-title">{title}</h2>
+  )}
+
+  <div class="post-grid">
+    {posts.map((post) => (
+      <PostCard {...post} />
+    ))}
+  </div>
+
+  {showLoadMore && posts.length >= 12 && (
+    <div class="load-more">
+      <button class="load-more-btn" id="load-more-btn">
+        Carregar mais artigos
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </button>
+    </div>
+  )}
+</section>
+
+<style>
+  .post-grid-section {
+    padding: var(--space-12) 0;
+  }
+
+  .section-title {
+    margin: 0 0 var(--space-8);
+    font-size: var(--text-2xl);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+  }
+
+  @media (min-width: 768px) {
+    .section-title {
+      font-size: var(--text-3xl);
+    }
+  }
+
+  .post-grid {
+    display: grid;
+    gap: var(--space-6);
+  }
+
+  @media (min-width: 640px) {
+    .post-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .post-grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-8);
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .post-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  .load-more {
+    display: flex;
+    justify-content: center;
+    margin-top: var(--space-10);
+  }
+
+  .load-more-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-6);
+    font-size: var(--text-base);
+    font-weight: var(--font-semibold);
+    font-family: var(--font-sans);
+    color: var(--color-primary-600);
+    background: var(--bg-primary);
+    border: 2px solid var(--color-primary-500);
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+  }
+
+  .load-more-btn:hover {
+    color: var(--text-inverse);
+    background: var(--color-primary-500);
+  }
+
+  .load-more-btn:active {
+    transform: scale(0.98);
+  }
+</style>

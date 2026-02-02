@@ -1,0 +1,260 @@
+---
+interface Props {
+  breadcrumbs: { label: string; href?: string }[];
+  eyebrow: string;
+  title: string;
+  description: string;
+  ctaPrimary: { label: string; href: string };
+  ctaSecondary?: { label: string; href: string };
+  heroImage: string;
+}
+
+const { breadcrumbs, eyebrow, title, description, ctaPrimary, ctaSecondary, heroImage } = Astro.props;
+---
+
+<section class="resource-hero">
+  <div class="hero-container">
+    <div class="hero-content">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        {breadcrumbs.map((item, index) => (
+          <>
+            {item.href ? (
+              <a href={item.href}>{item.label}</a>
+            ) : (
+              <span class="current">{item.label}</span>
+            )}
+            {index < breadcrumbs.length - 1 && <span class="separator">/</span>}
+          </>
+        ))}
+      </nav>
+
+      <span class="eyebrow">{eyebrow}</span>
+      <h1 class="hero-title">{title}</h1>
+      <p class="hero-description">{description}</p>
+
+      <div class="hero-actions">
+        <a href={ctaPrimary.href} class="btn-primary">
+          {ctaPrimary.label}
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7" />
+          </svg>
+        </a>
+        {ctaSecondary && (
+          <a href={ctaSecondary.href} class="btn-secondary">
+            {ctaSecondary.label}
+          </a>
+        )}
+      </div>
+    </div>
+
+    <div class="hero-image">
+      <img
+        src={heroImage}
+        alt={title}
+        loading="eager"
+        onerror="this.src='/images/placeholder-hero.jpg'"
+      />
+    </div>
+  </div>
+</section>
+
+<style>
+  .resource-hero {
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #f0fdf4 100%);
+    padding: 48px 0 64px;
+  }
+
+  .hero-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    align-items: center;
+  }
+
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    font-size: 0.875rem;
+  }
+
+  .breadcrumb a {
+    color: #64748b;
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+
+  .breadcrumb a:hover {
+    color: #0ea5e9;
+  }
+
+  .breadcrumb .separator {
+    color: #cbd5e1;
+  }
+
+  .breadcrumb .current {
+    color: #1e293b;
+    font-weight: 500;
+  }
+
+  .eyebrow {
+    display: inline-block;
+    padding: 6px 12px;
+    background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
+    color: #fff;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    border-radius: 4px;
+    margin-bottom: 16px;
+  }
+
+  .hero-title {
+    margin: 0 0 16px;
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+
+  .hero-description {
+    margin: 0 0 28px;
+    font-size: 1.0625rem;
+    color: #475569;
+    line-height: 1.7;
+    max-width: 500px;
+  }
+
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 24px;
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+    color: #fff;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 14px rgba(14, 165, 233, 0.3);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(14, 165, 233, 0.4);
+  }
+
+  .btn-primary svg {
+    transition: transform 0.2s ease;
+  }
+
+  .btn-primary:hover svg {
+    transform: translateX(4px);
+  }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 24px;
+    background: #fff;
+    color: #0f172a;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+
+  .btn-secondary:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+  }
+
+  .hero-image {
+    position: relative;
+  }
+
+  .hero-image img {
+    width: 100%;
+    height: auto;
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Tablet */
+  @media (max-width: 1024px) {
+    .hero-container {
+      gap: 32px;
+    }
+
+    .hero-title {
+      font-size: 2rem;
+    }
+  }
+
+  /* Mobile */
+  @media (max-width: 768px) {
+    .resource-hero {
+      padding: 32px 0 48px;
+    }
+
+    .hero-container {
+      grid-template-columns: 1fr;
+      gap: 32px;
+    }
+
+    .hero-content {
+      order: 1;
+    }
+
+    .hero-image {
+      order: 0;
+    }
+
+    .hero-title {
+      font-size: 1.75rem;
+    }
+
+    .hero-description {
+      font-size: 1rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .resource-hero {
+      padding: 24px 0 40px;
+    }
+
+    .hero-container {
+      padding: 0 16px;
+    }
+
+    .hero-title {
+      font-size: 1.5rem;
+    }
+
+    .hero-actions {
+      flex-direction: column;
+    }
+
+    .btn-primary,
+    .btn-secondary {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+</style>

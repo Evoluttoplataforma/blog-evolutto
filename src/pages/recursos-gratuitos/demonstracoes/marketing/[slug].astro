@@ -1,0 +1,288 @@
+---
+import BlogLayout from '../../../../layouts/BlogLayout.astro';
+import VideoPlayer from '../../../../components/recursos/VideoPlayer.astro';
+import RelatedResources from '../../../../components/recursos/RelatedResources.astro';
+import { getMarketingDemos, getMarketingDemoBySlug, getRelatedMarketingDemos } from '../../../../data/demosMarketing';
+
+export async function getStaticPaths() {
+  const demos = getMarketingDemos();
+  return demos.map((demo) => ({
+    params: { slug: demo.slug },
+    props: { demo },
+  }));
+}
+
+const { slug } = Astro.params;
+const { demo } = Astro.props;
+
+if (!demo) {
+  return Astro.redirect('/recursos-gratuitos/demonstracoes/marketing');
+}
+
+const relatedDemos = getRelatedMarketingDemos(demo.id, demo.category, 3);
+
+const breadcrumbs = [
+  { label: 'Home', href: '/' },
+  { label: 'Recursos Gratuitos', href: '/recursos-gratuitos' },
+  { label: 'Demonstrações de Marketing', href: '/recursos-gratuitos/demonstracoes/marketing' },
+  { label: demo.title },
+];
+---
+
+<BlogLayout
+  title={demo.title}
+  description={demo.description}
+  currentPath={`/recursos-gratuitos/demonstracoes/marketing/${demo.slug}`}
+>
+  <div class="watch-page">
+    <div class="watch-container">
+      <!-- Breadcrumbs -->
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <ol>
+          {breadcrumbs.map((crumb, index) => (
+            <li>
+              {crumb.href ? (
+                <a href={crumb.href}>{crumb.label}</a>
+              ) : (
+                <span aria-current="page">{crumb.label}</span>
+              )}
+              {index < breadcrumbs.length - 1 && (
+                <svg class="breadcrumb-separator" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              )}
+            </li>
+          ))}
+        </ol>
+      </nav>
+
+      <!-- Video Player -->
+      <VideoPlayer videoUrl={demo.videoUrl} title={demo.title} />
+
+      <!-- Content -->
+      <div class="watch-content">
+        <div class="watch-meta">
+          <span class="category-tag">{demo.category}</span>
+          {demo.isNew && <span class="new-badge">Novo</span>}
+          {demo.duration && <span class="duration">{demo.duration}</span>}
+        </div>
+
+        <h1 class="watch-title">{demo.title}</h1>
+        <p class="watch-description">{demo.description}</p>
+
+        {demo.tags && demo.tags.length > 0 && (
+          <div class="watch-tags">
+            {demo.tags.map((tag) => (
+              <span class="tag">{tag}</span>
+            ))}
+          </div>
+        )}
+
+        {demo.ctaHref && (
+          <a href={demo.ctaHref} class="watch-cta" target="_blank" rel="noopener noreferrer">
+            {demo.ctaLabel || 'Saiba mais'}
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </a>
+        )}
+      </div>
+
+      <!-- Related Resources -->
+      <RelatedResources
+        resources={relatedDemos}
+        basePath="/recursos-gratuitos/demonstracoes/marketing"
+      />
+    </div>
+  </div>
+</BlogLayout>
+
+<style>
+  .watch-page {
+    padding-top: calc(var(--header-height) + 32px);
+    padding-bottom: 64px;
+    min-height: 100vh;
+    background: var(--bg-secondary);
+  }
+
+  .watch-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  .breadcrumbs {
+    margin-bottom: 24px;
+  }
+
+  .breadcrumbs ol {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .breadcrumbs li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .breadcrumbs a {
+    font-size: 14px;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .breadcrumbs a:hover {
+    color: var(--color-primary-600);
+  }
+
+  .breadcrumbs span {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  .breadcrumb-separator {
+    color: var(--text-muted);
+    opacity: 0.5;
+  }
+
+  .watch-content {
+    background: #fff;
+    border-radius: 12px;
+    padding: 32px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  }
+
+  .watch-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .category-tag {
+    display: inline-block;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-primary-600);
+    background: var(--color-primary-50);
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .new-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .duration {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  .watch-title {
+    margin: 0 0 16px;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.3;
+  }
+
+  .watch-description {
+    margin: 0 0 24px;
+    font-size: 1rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+
+  .watch-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+
+  .tag {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    color: var(--text-muted);
+    background: var(--bg-secondary);
+    border-radius: 6px;
+  }
+
+  .watch-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 28px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+    background: var(--color-primary-500);
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+
+  .watch-cta:hover {
+    background: var(--color-primary-600);
+    transform: translateY(-1px);
+  }
+
+  @media (max-width: 768px) {
+    .watch-page {
+      padding-top: calc(var(--header-height-mobile) + 24px);
+      padding-bottom: 48px;
+    }
+
+    .watch-container {
+      padding: 0 16px;
+    }
+
+    .watch-content {
+      padding: 24px;
+      border-radius: 8px;
+    }
+
+    .watch-title {
+      font-size: 1.5rem;
+    }
+
+    .watch-meta {
+      flex-wrap: wrap;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .watch-content {
+      padding: 20px;
+    }
+
+    .watch-title {
+      font-size: 1.25rem;
+    }
+
+    .watch-cta {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+</style>

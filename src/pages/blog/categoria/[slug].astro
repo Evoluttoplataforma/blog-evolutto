@@ -1,0 +1,207 @@
+---
+import { getCollection } from 'astro:content';
+import BlogLayout from '../../../layouts/BlogLayout.astro';
+import BlogHero from '../../../components/blog/BlogHero.astro';
+import CategoryChips from '../../../components/blog/CategoryChips.astro';
+import PostGrid from '../../../components/blog/PostGrid.astro';
+
+// Generate static paths for all categories
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+
+  // Extract all unique categories
+  const categoryMap = new Map<string, string>();
+
+  posts.forEach((post) => {
+    const cats = post.data.categories || ['Geral'];
+    cats.forEach((cat: string) => {
+      const slug = cat.toLowerCase().replace(/\s+/g, '-');
+      if (!categoryMap.has(slug)) {
+        categoryMap.set(slug, cat);
+      }
+    });
+  });
+
+  // Create paths for each category
+  return Array.from(categoryMap.entries()).map(([slug, name]) => ({
+    params: { slug },
+    props: { categoryName: name, categorySlug: slug },
+  }));
+}
+
+const { categoryName, categorySlug } = Astro.props;
+
+// Helper to get full image URL
+function getImageUrl(image?: string): string | undefined {
+  if (!image) return undefined;
+  if (image.startsWith('http') || image.startsWith('/')) return image;
+  return `/images/${image}`;
+}
+
+// Get all blog posts
+const allPosts = await getCollection('blog');
+
+// Filter posts by category
+const categoryPosts = allPosts.filter((post) => {
+  const cats = post.data.categories || [];
+  return cats.some((cat: string) => cat.toLowerCase().replace(/\s+/g, '-') === categorySlug);
+});
+
+// Sort by date (newest first)
+const sortedPosts = categoryPosts.sort((a, b) => {
+  const dateA = a.data.date ? new Date(a.data.date).getTime() : 0;
+  const dateB = b.data.date ? new Date(b.data.date).getTime() : 0;
+  return dateB - dateA;
+});
+
+// Transform posts for components
+const transformedPosts = sortedPosts.map((post) => ({
+  title: post.data.title,
+  slug: post.slug,
+  excerpt: post.data.excerpt || post.data.description || '',
+  coverImage: getImageUrl(post.data.coverImage || post.data.image),
+  category: post.data.categories?.[0] || 'Geral',
+  categorySlug: post.data.categories?.[0]?.toLowerCase().replace(/\s+/g, '-') || 'geral',
+  date: post.data.date,
+  readTime: post.data.readTime || 5,
+}));
+
+// Extract all unique categories with counts for chips
+const categoryMapAll = new Map<string, { name: string; slug: string; count: number }>();
+
+allPosts.forEach((post) => {
+  const cats = post.data.categories || ['Geral'];
+  cats.forEach((cat: string) => {
+    const slug = cat.toLowerCase().replace(/\s+/g, '-');
+    if (categoryMapAll.has(slug)) {
+      categoryMapAll.get(slug)!.count++;
+    } else {
+      categoryMapAll.set(slug, { name: cat, slug, count: 1 });
+    }
+  });
+});
+
+// Sort categories by count and take top 8
+const categories = Array.from(categoryMapAll.values())
+  .sort((a, b) => b.count - a.count)
+  .slice(0, 8);
+
+// Category descriptions
+const categoryDescriptions: Record<string, string> = {
+  marketing: 'Estrategias de marketing digital para consultores',
+  vendas: 'Tecnicas e processos de vendas para consultorias',
+  gestao: 'Gestao de projetos e operacoes para consultorias',
+  tecnologia: 'Ferramentas e tecnologias para consultorias',
+  estrategia: 'Planejamento estrategico para consultorias',
+  empreendedorismo: 'Dicas para empreendedores e consultores',
+  produtividade: 'Aumente sua produtividade como consultor',
+  lideranca: 'Desenvolva habilidades de lideranca',
+  inovacao: 'Inovacao e transformacao digital',
+  financas: 'Gestao financeira para consultores',
+};
+
+const description = categoryDescriptions[categorySlug] || `Artigos sobre ${categoryName} para consultores`;
+---
+
+<BlogLayout
+  title={categoryName}
+  description={description}
+  currentPath={`/blog/categoria/${categorySlug}`}
+>
+  <BlogHero
+    title={categoryName}
+    subtitle={description}
+    ctaText="Ver todos os artigos"
+    ctaUrl="/blog"
+    showIllustration={false}
+  />
+
+  <section class="category-main">
+    <div class="category-container">
+      <CategoryChips categories={categories} activeCategory={categorySlug} />
+
+      <div class="category-header">
+        <p class="post-count">
+          {transformedPosts.length} {transformedPosts.length === 1 ? 'artigo' : 'artigos'} encontrados
+        </p>
+      </div>
+
+      {transformedPosts.length > 0 ? (
+        <PostGrid posts={transformedPosts} />
+      ) : (
+        <div class="no-posts">
+          <p>Nenhum artigo encontrado nesta categoria.</p>
+          <a href="/blog" class="back-link">Ver todos os artigos</a>
+        </div>
+      )}
+    </div>
+  </section>
+</BlogLayout>
+
+<style>
+  .category-main {
+    padding: var(--space-12) 0;
+    background: var(--bg-primary);
+  }
+
+  .category-container {
+    max-width: var(--container-xl);
+    margin: 0 auto;
+    padding: 0 var(--space-4);
+  }
+
+  @media (min-width: 768px) {
+    .category-container {
+      padding: 0 var(--space-6);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .category-container {
+      padding: 0 var(--space-8);
+    }
+  }
+
+  .category-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-6);
+    padding-bottom: var(--space-4);
+    border-bottom: 1px solid var(--border-light);
+  }
+
+  .post-count {
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+  }
+
+  .no-posts {
+    text-align: center;
+    padding: var(--space-16) 0;
+  }
+
+  .no-posts p {
+    margin: 0 0 var(--space-4);
+    font-size: var(--text-lg);
+    color: var(--text-secondary);
+  }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--space-3) var(--space-6);
+    font-size: var(--text-base);
+    font-weight: var(--font-semibold);
+    color: var(--text-inverse);
+    background: var(--color-primary-500);
+    border-radius: var(--radius-full);
+    text-decoration: none;
+    transition: all var(--transition-fast);
+  }
+
+  .back-link:hover {
+    background: var(--color-primary-600);
+    transform: translateY(-2px);
+  }
+</style>

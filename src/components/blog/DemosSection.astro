@@ -1,0 +1,175 @@
+---
+import DemoCard from './DemoCard.astro';
+import { getFeaturedDemos } from '../../data/demos';
+
+const demos = getFeaturedDemos(3);
+---
+
+<section class="demos-section">
+  <div class="demos-container">
+    <div class="demos-intro">
+      <h2 class="demos-title">Demonstrações</h2>
+      <p class="demos-subtitle">
+        Veja na prática como o Evolutto transforma consultorias
+      </p>
+      <a href="/blog/demonstracoes" class="demos-cta">
+        Acesse todas
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M5 12h14M12 5l7 7-7 7" />
+        </svg>
+      </a>
+    </div>
+
+    <div class="demos-grid">
+      {demos.map((demo) => (
+        <DemoCard demo={demo} />
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .demos-section {
+    padding: 48px 0;
+    background: linear-gradient(180deg, #f8fafc 0%, #fff 100%);
+  }
+
+  .demos-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 40px;
+    align-items: start;
+  }
+
+  .demos-intro {
+    position: sticky;
+    top: 96px;
+  }
+
+  .demos-title {
+    margin: 0 0 12px;
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+  }
+
+  .demos-subtitle {
+    margin: 0 0 20px;
+    font-size: 0.9375rem;
+    color: #64748b;
+    line-height: 1.6;
+  }
+
+  .demos-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: #0ea5e9;
+    text-decoration: none;
+    transition: all 0.15s ease;
+  }
+
+  .demos-cta:hover {
+    color: #0284c7;
+    gap: 10px;
+  }
+
+  .demos-cta svg {
+    transition: transform 0.15s ease;
+  }
+
+  .demos-cta:hover svg {
+    transform: translateX(2px);
+  }
+
+  .demos-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  /* Tablet */
+  @media (max-width: 1024px) {
+    .demos-container {
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+
+    .demos-intro {
+      position: static;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px 24px;
+    }
+
+    .demos-title {
+      margin: 0;
+      font-size: 1.5rem;
+    }
+
+    .demos-subtitle {
+      flex: 100%;
+      margin: 0;
+      order: 2;
+    }
+
+    .demos-cta {
+      order: 1;
+      margin-left: auto;
+    }
+
+    .demos-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  /* Tablet small */
+  @media (max-width: 768px) {
+    .demos-section {
+      padding: 40px 0;
+    }
+
+    .demos-container {
+      padding: 0 16px;
+    }
+
+    .demos-intro {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .demos-cta {
+      margin-left: 0;
+      order: 3;
+    }
+
+    .demos-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+  }
+
+  /* Mobile */
+  @media (max-width: 540px) {
+    .demos-section {
+      padding: 32px 0;
+    }
+
+    .demos-title {
+      font-size: 1.375rem;
+    }
+
+    .demos-grid {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+  }
+</style>

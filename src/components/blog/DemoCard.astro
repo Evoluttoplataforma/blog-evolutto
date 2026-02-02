@@ -1,0 +1,144 @@
+---
+import type { Demo } from '../../data/demos';
+
+interface Props {
+  demo: Demo;
+}
+
+const { demo } = Astro.props;
+const isExternal = demo.href.startsWith('http');
+---
+
+<a
+  href={demo.href}
+  target={isExternal ? '_blank' : '_self'}
+  rel={isExternal ? 'noopener noreferrer' : undefined}
+  class="demo-card"
+>
+  <div class="demo-thumb">
+    <img
+      src={demo.thumbnail}
+      alt={demo.title}
+      loading="lazy"
+      onerror="this.src='/images/placeholder-demo.jpg'"
+    />
+    {demo.isVideo && (
+      <div class="play-overlay">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M8 5v14l11-7z" />
+        </svg>
+      </div>
+    )}
+    {demo.isNew && <span class="new-badge">NOVO</span>}
+  </div>
+  <div class="demo-content">
+    <span class="demo-tag">{demo.tag}</span>
+    <h3 class="demo-title">{demo.title}</h3>
+  </div>
+</a>
+
+<style>
+  .demo-card {
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .demo-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+  }
+
+  .demo-thumb {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: #f1f5f9;
+  }
+
+  .demo-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+  .demo-card:hover .demo-thumb img {
+    transform: scale(1.05);
+  }
+
+  .play-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.3);
+    opacity: 0.9;
+    transition: all 0.2s ease;
+  }
+
+  .play-overlay svg {
+    width: 56px;
+    height: 56px;
+    color: #fff;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+    transition: transform 0.2s ease;
+  }
+
+  .demo-card:hover .play-overlay {
+    background: rgba(0, 0, 0, 0.4);
+  }
+
+  .demo-card:hover .play-overlay svg {
+    transform: scale(1.1);
+  }
+
+  .new-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    padding: 4px 10px;
+    background: #ef4444;
+    color: #fff;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    border-radius: 4px;
+  }
+
+  .demo-content {
+    padding: 16px;
+  }
+
+  .demo-tag {
+    display: inline-block;
+    padding: 4px 8px;
+    background: #dbeafe;
+    color: #1e40af;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    border-radius: 4px;
+    margin-bottom: 8px;
+  }
+
+  .demo-title {
+    margin: 0;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: #1e293b;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+</style>

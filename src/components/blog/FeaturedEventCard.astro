@@ -1,0 +1,234 @@
+---
+interface Props {
+  title: string;
+  description: string;
+  date: Date;
+  time: string;
+  tag: string;
+  ctaText: string;
+  ctaUrl: string;
+  image?: string;
+}
+
+const { title, description, date, time, tag, ctaText, ctaUrl, image } = Astro.props;
+
+const formattedDate = new Intl.DateTimeFormat('pt-BR', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+}).format(date);
+---
+
+<div class="featured-event-card">
+  <div class="featured-event-content">
+    <span class="featured-event-tag">{tag}</span>
+    <h3 class="featured-event-title">{title}</h3>
+    <p class="featured-event-description">{description}</p>
+    <div class="featured-event-meta">
+      <div class="meta-item">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+        <span>{formattedDate}</span>
+      </div>
+      <div class="meta-item">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        <span>{time}</span>
+      </div>
+    </div>
+    <a href={ctaUrl} class="featured-event-cta" target="_blank" rel="noopener noreferrer">
+      {ctaText}
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M5 12h14"></path>
+        <path d="M12 5l7 7-7 7"></path>
+      </svg>
+    </a>
+  </div>
+  <div class="featured-event-image">
+    {image ? (
+      <img
+        src={image}
+        alt=""
+        loading="lazy"
+        onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
+      />
+      <div class="image-placeholder" style="display:none;">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+      </div>
+    ) : (
+      <div class="image-placeholder">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+      </div>
+    )}
+  </div>
+</div>
+
+<style>
+  .featured-event-card {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding: 24px;
+    background: linear-gradient(135deg, var(--color-primary-600, #0284c7) 0%, var(--color-primary-800, #075985) 100%);
+    border-radius: 16px;
+    color: #fff;
+    height: 100%;
+  }
+
+  @media (min-width: 640px) {
+    .featured-event-card {
+      flex-direction: row;
+      padding: 32px;
+    }
+  }
+
+  .featured-event-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .featured-event-tag {
+    display: inline-flex;
+    align-self: flex-start;
+    padding: 4px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--color-primary-700, #0369a1);
+    background: #fff;
+    border-radius: 9999px;
+  }
+
+  .featured-event-title {
+    margin: 0;
+    font-size: 1.375rem;
+    font-weight: 700;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  @media (min-width: 768px) {
+    .featured-event-title {
+      font-size: 1.5rem;
+    }
+  }
+
+  .featured-event-description {
+    margin: 0;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    opacity: 0.9;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .featured-event-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 4px;
+  }
+
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    opacity: 0.9;
+  }
+
+  .meta-item svg {
+    flex-shrink: 0;
+  }
+
+  .featured-event-cta {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    gap: 8px;
+    padding: 12px 24px;
+    margin-top: 8px;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--color-primary-700, #0369a1);
+    background: #fff;
+    border-radius: 9999px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+
+  .featured-event-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  }
+
+  .featured-event-cta svg {
+    transition: transform 0.15s ease;
+  }
+
+  .featured-event-cta:hover svg {
+    transform: translateX(3px);
+  }
+
+  .featured-event-image {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: 12px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  @media (min-width: 640px) {
+    .featured-event-image {
+      width: 200px;
+      aspect-ratio: 1 / 1;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .featured-event-image {
+      width: 240px;
+    }
+  }
+
+  .featured-event-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .image-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.5);
+  }
+</style>

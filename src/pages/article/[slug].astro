@@ -1,0 +1,208 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Sidebar from '../../components/Sidebar.astro';
+import '../../styles/article.css';
+
+export async function getStaticPaths() {
+  const articles = await getCollection('blog');
+  return articles.map(article => ({
+    params: { slug: article.slug },
+    props: { article },
+  }));
+}
+
+const { article } = Astro.props;
+const { Content } = await article.render();
+
+// Get all articles for related and categories
+const allArticles = await getCollection('blog');
+
+// Get related articles (same category)
+const relatedArticles = allArticles
+  .filter(a => a.slug !== article.slug &&
+    a.data.categories?.some(c => article.data.categories?.includes(c)))
+  .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime())
+  .slice(0, 3);
+
+// Get all categories
+const allCategories = [...new Set(allArticles.flatMap(a => a.data.categories || []))];
+
+// Format date
+const publishDate = new Date(article.data.date).toLocaleDateString('pt-BR', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric'
+});
+
+// Author info
+const authorName = article.data.author?.name || 'Evolutto Team';
+const authorRole = article.data.author?.role || 'Inovacao & Estrategia';
+const authorAvatar = article.data.author?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=100';
+const authorBio = article.data.author?.bio || 'Especialistas em digitalizacao de consultorias, trazendo insights valiosos para escalar seu negocio com tecnologia e inteligencia.';
+
+// Cover image
+const coverImage = article.data.coverImage
+  ? article.data.coverImage.startsWith('http')
+    ? article.data.coverImage
+    : `/images/${article.data.coverImage}`
+  : 'https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&q=80&w=1200';
+---
+
+<BaseLayout
+  title={`${article.data.title} - Evolutto Blog`}
+  description={article.data.excerpt || article.data.title}
+  image={coverImage}
+>
+  <div class="article-page">
+    <!-- Progress Bar -->
+    <div class="reading-progress-bar">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+
+    <main class="article-main">
+      <div class="container">
+        <!-- Back Navigation -->
+        <div class="back-nav">
+          <a href="/" class="back-link">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+            Voltar ao Blog
+          </a>
+        </div>
+
+        <div class="article-layout">
+          <!-- Main Article Content -->
+          <article class="article-content">
+            <!-- Article Header -->
+            <header class="article-header">
+              <div class="article-category-wrapper">
+                <span class="badge">{article.data.categories?.[0] || 'Geral'}</span>
+                <span class="reading-time">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  {article.data.readTime || '5 min de leitura'}
+                </span>
+              </div>
+              <h1 class="article-title">{article.data.title}</h1>
+
+              <div class="article-meta-bar">
+                <div class="author-info">
+                  <div class="author-avatar">
+                    <img src={authorAvatar} alt={authorName} width="48" height="48" loading="eager" />
+                  </div>
+                  <div class="author-details">
+                    <span class="author-name">{authorName}</span>
+                    <span class="author-role">{authorRole}</span>
+                  </div>
+                </div>
+                <div class="meta-right">
+                  <span class="publish-date">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+                    {publishDate}
+                  </span>
+                </div>
+              </div>
+            </header>
+
+            <!-- Featured Image -->
+            <div class="article-featured-image">
+              <img src={coverImage} alt={article.data.title} width="1200" height="630" loading="eager" />
+            </div>
+
+            <!-- Article Body -->
+            <div class="article-body-premium">
+              <Content />
+            </div>
+
+            <!-- Article Footer -->
+            <footer class="article-footer">
+              <!-- Tags -->
+              <div class="article-tags">
+                <span class="tags-label">Categorias:</span>
+                <div class="tags-list">
+                  {(article.data.categories || []).map(tag => (
+                    <a href={`/category/${tag.toLowerCase()}`} class="tag-item">
+                      #{tag}
+                    </a>
+                  ))}
+                </div>
+              </div>
+
+              <!-- Author Card -->
+              <div class="author-card">
+                <div class="author-card-avatar">
+                  <img src={authorAvatar} alt={authorName} width="80" height="80" loading="lazy" />
+                </div>
+                <div class="author-card-info">
+                  <span class="author-label">Escrito por</span>
+                  <h4 class="author-card-name">{authorName}</h4>
+                  <p class="author-card-bio">{authorBio}</p>
+                </div>
+              </div>
+            </footer>
+
+            <!-- Related Articles -->
+            {relatedArticles.length > 0 && (
+              <section class="related-articles">
+                <h3 class="related-title">Artigos Relacionados</h3>
+                <div class="related-grid">
+                  {relatedArticles.map(rel => {
+                    const relImage = rel.data.coverImage
+                      ? rel.data.coverImage.startsWith('http')
+                        ? rel.data.coverImage
+                        : `/images/${rel.data.coverImage}`
+                      : 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=400';
+
+                    return (
+                      <a href={`/article/${rel.slug}`} class="related-card">
+                        <div class="related-image">
+                          <img src={relImage} alt={rel.data.title} width="400" height="200" loading="lazy" />
+                        </div>
+                        <div class="related-content">
+                          <span class="related-category">{rel.data.categories?.[0] || 'Geral'}</span>
+                          <h4 class="related-card-title">{rel.data.title}</h4>
+                          <span class="related-meta">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            {rel.data.readTime || '5 min'}
+                          </span>
+                        </div>
+                      </a>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+          </article>
+
+          <!-- Sidebar -->
+          <Sidebar relatedArticles={relatedArticles} categories={allCategories} />
+        </div>
+      </div>
+    </main>
+  </div>
+</BaseLayout>
+
+<script>
+  // Reading progress bar
+  const progressFill = document.getElementById('progress-fill');
+  const articleBody = document.querySelector('.article-body-premium');
+
+  function updateProgress() {
+    if (articleBody && progressFill) {
+      const rect = articleBody.getBoundingClientRect();
+      const articleTop = rect.top + window.scrollY;
+      const articleHeight = articleBody.offsetHeight;
+      const windowHeight = window.innerHeight;
+      const scrollY = window.scrollY;
+
+      const progress = Math.min(
+        Math.max((scrollY - articleTop + windowHeight * 0.3) / articleHeight * 100, 0),
+        100
+      );
+
+      progressFill.style.width = `${progress}%`;
+    }
+  }
+
+  window.addEventListener('scroll', updateProgress);
+  updateProgress();
+</script>

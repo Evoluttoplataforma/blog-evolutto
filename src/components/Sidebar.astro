@@ -1,0 +1,97 @@
+---
+import LeadMagnetCTA from './react/LeadMagnetCTA.jsx';
+import NewsletterWidget from './react/NewsletterWidget.jsx';
+
+interface RelatedArticle {
+  slug: string;
+  data: {
+    title: string;
+    date: Date;
+    coverImage?: string;
+  };
+}
+
+interface Props {
+  relatedArticles?: RelatedArticle[];
+  categories?: string[];
+}
+
+const { relatedArticles = [], categories = [] } = Astro.props;
+---
+
+<aside class="article-sidebar">
+  <div class="sticky-sidebar">
+    <!-- Lead Magnet CTA -->
+    <LeadMagnetCTA client:visible />
+
+    <!-- Newsletter Widget -->
+    <NewsletterWidget client:visible />
+
+    <!-- Related Articles -->
+    {relatedArticles.length > 0 && (
+      <div class="sidebar-widget related-posts-widget">
+        <h4 class="widget-title">Artigos Relacionados</h4>
+        <div class="sidebar-related-list">
+          {relatedArticles.slice(0, 3).map((rel) => {
+            const imageUrl = rel.data.coverImage
+              ? rel.data.coverImage.startsWith('http')
+                ? rel.data.coverImage
+                : `/images/${rel.data.coverImage}`
+              : 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=150';
+
+            return (
+              <a href={`/article/${rel.slug}`} class="sidebar-related-item">
+                <div class="sidebar-related-image">
+                  <img src={imageUrl} alt={rel.data.title} loading="lazy" />
+                </div>
+                <div class="sidebar-related-info">
+                  <h5 class="sidebar-related-title">{rel.data.title}</h5>
+                  <span class="sidebar-related-date">
+                    {new Date(rel.data.date).toLocaleDateString('pt-BR')}
+                  </span>
+                </div>
+              </a>
+            );
+          })}
+        </div>
+      </div>
+    )}
+
+    <!-- Categories Widget -->
+    {categories.length > 0 && (
+      <div class="sidebar-widget categories-widget">
+        <h4 class="widget-title">Categorias</h4>
+        <ul class="category-list">
+          {categories.slice(0, 8).map((cat) => (
+            <li>
+              <a href={`/category/${cat.toLowerCase()}`} class="category-link">
+                <span>{cat.charAt(0).toUpperCase() + cat.slice(1)}</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
+
+    <!-- Social Follow -->
+    <div class="sidebar-widget social-widget">
+      <h4 class="widget-title">Siga-nos</h4>
+      <div class="social-buttons">
+        <a href="https://twitter.com/evolutto" target="_blank" rel="noopener noreferrer" class="social-btn twitter">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"/></svg>
+        </a>
+        <a href="https://linkedin.com/company/evolutto" target="_blank" rel="noopener noreferrer" class="social-btn linkedin">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>
+        </a>
+        <a href="https://facebook.com/evolutto" target="_blank" rel="noopener noreferrer" class="social-btn facebook">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<style>
+  /* Import article styles for sidebar */
+</style>

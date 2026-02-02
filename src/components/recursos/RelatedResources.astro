@@ -1,0 +1,67 @@
+---
+import type { FreeResource } from '../../data/freeResources';
+import ResourceCard from './ResourceCard.astro';
+
+interface Props {
+  resources: FreeResource[];
+  basePath: string;
+  title?: string;
+}
+
+const { resources, basePath, title = 'Conteúdos relacionados' } = Astro.props;
+---
+
+{resources.length > 0 && (
+  <section class="related-resources">
+    <h2 class="related-title">{title}</h2>
+    <div class="related-grid">
+      {resources.map((resource) => (
+        <ResourceCard resource={resource} basePath={basePath} />
+      ))}
+    </div>
+  </section>
+)}
+
+<style>
+  .related-resources {
+    margin-top: 64px;
+    padding-top: 48px;
+    border-top: 1px solid #e2e8f0;
+  }
+
+  .related-title {
+    margin: 0 0 24px;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #0f172a;
+  }
+
+  .related-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+
+  @media (max-width: 1024px) {
+    .related-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .related-resources {
+      margin-top: 48px;
+      padding-top: 32px;
+    }
+
+    .related-title {
+      font-size: 1.25rem;
+    }
+
+    .related-grid {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+  }
+</style>

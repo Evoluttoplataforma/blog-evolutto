@@ -1,0 +1,124 @@
+---
+import PostCard from './PostCard.astro';
+
+interface Post {
+  title: string;
+  slug: string;
+  excerpt?: string;
+  coverImage?: string;
+  category?: string;
+  categorySlug?: string;
+  date?: Date;
+  readTime?: number;
+}
+
+interface Props {
+  posts: Post[];
+  title?: string;
+}
+
+const { posts, title = 'Artigos em Destaque' } = Astro.props;
+
+// Take only first 3 posts
+const featuredPosts = posts.slice(0, 3);
+---
+
+{featuredPosts.length > 0 && (
+  <section class="featured-posts">
+    <div class="featured-container">
+      <h2 class="featured-title">{title}</h2>
+
+      <div class="featured-grid">
+        {/* Main featured post */}
+        <div class="featured-main">
+          <PostCard
+            {...featuredPosts[0]}
+            variant="featured"
+            featured={true}
+          />
+        </div>
+
+        {/* Secondary posts */}
+        <div class="featured-secondary">
+          {featuredPosts.slice(1, 3).map((post) => (
+            <PostCard {...post} variant="horizontal" />
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+)}
+
+<style>
+  .featured-posts {
+    padding: var(--space-12) 0;
+    background: var(--bg-secondary);
+  }
+
+  .featured-container {
+    max-width: var(--container-xl);
+    margin: 0 auto;
+    padding: 0 var(--space-4);
+  }
+
+  @media (min-width: 768px) {
+    .featured-container {
+      padding: 0 var(--space-6);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .featured-container {
+      padding: 0 var(--space-8);
+    }
+  }
+
+  .featured-title {
+    margin: 0 0 var(--space-8);
+    font-size: var(--text-2xl);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+  }
+
+  @media (min-width: 768px) {
+    .featured-title {
+      font-size: var(--text-3xl);
+    }
+  }
+
+  .featured-grid {
+    display: grid;
+    gap: var(--space-6);
+  }
+
+  @media (min-width: 1024px) {
+    .featured-grid {
+      grid-template-columns: 3fr 2fr;
+      gap: var(--space-8);
+    }
+  }
+
+  .featured-main {
+    display: flex;
+  }
+
+  .featured-main > :global(.post-card) {
+    flex: 1;
+  }
+
+  .featured-secondary {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+  }
+
+  @media (min-width: 1024px) {
+    .featured-secondary {
+      gap: var(--space-4);
+    }
+  }
+
+  .featured-secondary > :global(.post-card) {
+    flex: 1;
+  }
+</style>

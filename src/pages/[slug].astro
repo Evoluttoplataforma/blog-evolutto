@@ -1,0 +1,936 @@
+---
+import { getCollection } from 'astro:content';
+import BlogLayout from '../layouts/BlogLayout.astro';
+import PostCard from '../components/blog/PostCard.astro';
+import SidebarCTA from '../components/blog/SidebarCTA.jsx';
+import NextLiveCard from '../components/blog/NextLiveCard.astro';
+
+// Generate static paths for pages (priority) and blog posts
+export async function getStaticPaths() {
+  const pages = await getCollection('pages');
+  const posts = await getCollection('blog');
+
+  // Create a Set of page slugs to avoid duplicates
+  const pageSlugs = new Set(pages.map((page) => page.slug));
+
+  // Map pages with type identifier
+  const pagePaths = pages.map((page) => ({
+    params: { slug: page.slug },
+    props: { entry: page, type: 'page' as const },
+  }));
+
+  // Map blog posts, excluding any that would conflict with pages
+  const blogPaths = posts
+    .filter((post) => !pageSlugs.has(post.slug))
+    .map((post) => ({
+      params: { slug: post.slug },
+      props: { entry: post, type: 'blog' as const },
+    }));
+
+  return [...pagePaths, ...blogPaths];
+}
+
+const { entry, type } = Astro.props;
+const post = entry; // Alias for backward compatibility in blog template
+const { Content } = await entry.render();
+
+// Helper to get full image URL
+function getImageUrl(image?: string): string | undefined {
+  if (!image) return undefined;
+  if (image.startsWith('http') || image.startsWith('/')) return image;
+  return `/images/${image}`;
+}
+
+// Blog-specific logic (only runs for blog posts)
+let relatedPosts: Array<{
+  title: string;
+  slug: string;
+  excerpt: string;
+  coverImage: string | undefined;
+  category: string;
+  categorySlug: string;
+  date: Date;
+  readTime: string | number;
+}> = [];
+let category = 'Geral';
+let categorySlug = 'geral';
+let catColor = 'var(--cat-default)';
+
+if (type === 'blog') {
+  // Get all posts for related articles
+  const allPosts = await getCollection('blog');
+  const sortedPosts = allPosts.sort((a, b) => {
+    const dateA = a.data.date ? new Date(a.data.date).getTime() : 0;
+    const dateB = b.data.date ? new Date(b.data.date).getTime() : 0;
+    return dateB - dateA;
+  });
+
+  // Get related posts (same category, excluding current)
+  const currentCategories = post.data.categories || [];
+  relatedPosts = sortedPosts
+    .filter((p) => {
+      if (p.slug === post.slug) return false;
+      const postCats = p.data.categories || [];
+      return postCats.some((cat: string) => currentCategories.includes(cat));
+    })
+    .slice(0, 3)
+    .map((p) => ({
+      title: p.data.title,
+      slug: p.slug,
+      excerpt: p.data.excerpt || (p.data as any).description || '',
+      coverImage: getImageUrl(p.data.coverImage || (p.data as any).image),
+      category: p.data.categories?.[0] || 'Geral',
+      categorySlug: p.data.categories?.[0]?.toLowerCase().replace(/\s+/g, '-') || 'geral',
+      date: p.data.date,
+      readTime: p.data.readTime || 5,
+    }));
+
+  category = post.data.categories?.[0] || 'Geral';
+  categorySlug = category.toLowerCase().replace(/\s+/g, '-');
+
+  // Category colors
+  const categoryColors: Record<string, string> = {
+    marketing: 'var(--cat-marketing)',
+    vendas: 'var(--cat-vendas)',
+    gestao: 'var(--cat-gestao)',
+    tecnologia: 'var(--cat-tecnologia)',
+    estrategia: 'var(--cat-estrategia)',
+    empreendedorismo: 'var(--cat-empreendedorismo)',
+    produtividade: 'var(--cat-produtividade)',
+    lideranca: 'var(--cat-lideranca)',
+    inovacao: 'var(--cat-inovacao)',
+    financas: 'var(--cat-financas)',
+    digitalizacao: 'var(--cat-tecnologia)',
+    escala: 'var(--cat-estrategia)',
+    produtizacao: 'var(--cat-produtividade)',
+  };
+
+  catColor = categoryColors[categorySlug] || 'var(--cat-default)';
+}
+
+// Get current post cover image
+const postCoverImage = getImageUrl(entry.data.coverImage || (entry.data as any).image);
+
+// Format date
+const formattedDate = entry.data.date
+  ? new Intl.DateTimeFormat('pt-BR', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    }).format(new Date(entry.data.date))
+  : null;
+---
+
+{type === 'page' && (
+  <BlogLayout
+    title={entry.data.title}
+    description={entry.data.excerpt}
+    image={postCoverImage}
+    article={false}
+    currentPath={`/${entry.slug}`}
+  >
+    <article class="page-content">
+      <div class="page-container">
+        <div class="page-body prose">
+          <Content />
+        </div>
+      </div>
+    </article>
+  </BlogLayout>
+)}
+
+{type === 'blog' && (
+  <BlogLayout
+    title={post.data.title}
+    description={post.data.excerpt || (post.data as any).description}
+    image={postCoverImage}
+    article={true}
+    publishedTime={post.data.date?.toISOString()}
+    currentPath={`/${post.slug}`}
+  >
+    <article class="article-page" style={`--cat-color: ${catColor}`}>
+      <div class="article-layout">
+        <main class="article-main">
+          <header class="article-header">
+            <div class="header-top">
+              <a href={`/categoria/${categorySlug}`} class="article-category">
+                {category}
+              </a>
+              {formattedDate && (
+                <>
+                  <span class="header-separator">|</span>
+                  <span class="article-date">{formattedDate}</span>
+                </>
+              )}
+            </div>
+
+            <h1 class="article-title">{post.data.title}</h1>
+
+            <div class="header-meta">
+              {post.data.author && (
+              <div class="meta-author">
+                <div class="author-avatar">
+                  {post.data.authorImage ? (
+                    <img src={post.data.authorImage} alt={post.data.author} />
+                  ) : (
+                    <span>{post.data.author.charAt(0)}</span>
+                  )}
+                </div>
+                <span class="author-name">{post.data.author}</span>
+              </div>
+            )}
+            {post.data.readTime && (
+              <span class="meta-read-time">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                {post.data.readTime} min
+              </span>
+            )}
+          </div>
+
+          <div class="article-cover">
+            {postCoverImage ? (
+              <img
+                src={postCoverImage}
+                alt=""
+                loading="eager"
+                onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
+              />
+              <div class="cover-placeholder" style="display:none;">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                  <polyline points="21 15 16 10 5 21"></polyline>
+                </svg>
+              </div>
+            ) : (
+              <div class="cover-placeholder">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                  <polyline points="21 15 16 10 5 21"></polyline>
+                </svg>
+              </div>
+            )}
+          </div>
+        </header>
+
+        <!-- Article Content -->
+        <div class="article-content prose">
+          <Content />
+        </div>
+      </main>
+
+      <!-- Sidebar -->
+      <aside class="article-sidebar">
+          <div class="sidebar-sticky">
+            <!-- Next Live Card -->
+            <NextLiveCard />
+
+            <!-- CTA Box with Modal -->
+            <SidebarCTA
+              client:load
+              title="E-book Gratuito"
+              description="Escale sua Consultoria com estrategias comprovadas"
+              buttonText="Baixar Agora"
+              modalTitle="E-book Gratuito"
+              modalDescription="Preencha seus dados para receber o e-book"
+            />
+
+            <!-- Share Box -->
+            <div class="sidebar-share">
+              <h4>Compartilhar</h4>
+              <div class="share-buttons">
+                <a
+                  href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(`https://blog.evolutto.com.br/${post.slug}`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="share-btn linkedin"
+                  aria-label="Compartilhar no LinkedIn"
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                  </svg>
+                </a>
+                <a
+                  href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(`https://blog.evolutto.com.br/${post.slug}`)}&text=${encodeURIComponent(post.data.title)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="share-btn twitter"
+                  aria-label="Compartilhar no Twitter"
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                  </svg>
+                </a>
+                <a
+                  href={`https://wa.me/?text=${encodeURIComponent(post.data.title + ' - https://blog.evolutto.com.br/' + post.slug)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="share-btn whatsapp"
+                  aria-label="Compartilhar no WhatsApp"
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                  </svg>
+                </a>
+                <button
+                  class="share-btn copy"
+                  data-url={`https://blog.evolutto.com.br/${post.slug}`}
+                  aria-label="Copiar link"
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Table of Contents (if available) -->
+            <nav class="sidebar-toc" id="toc">
+              <h4>Neste artigo</h4>
+              <ul id="toc-list"></ul>
+            </nav>
+          </div>
+        </aside>
+      </div>
+
+    <!-- Related Posts -->
+    {relatedPosts.length > 0 && (
+      <section class="related-posts">
+        <div class="related-container">
+          <h2>Artigos Relacionados</h2>
+          <div class="related-grid">
+            {relatedPosts.map((relPost) => (
+              <PostCard {...relPost} />
+            ))}
+          </div>
+        </div>
+      </section>
+    )}
+    </article>
+  </BlogLayout>
+)}
+
+<script>
+  // Copy link functionality
+  document.querySelectorAll('.share-btn.copy').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const url = btn.getAttribute('data-url');
+      if (url) {
+        try {
+          await navigator.clipboard.writeText(url);
+          btn.classList.add('copied');
+          setTimeout(() => btn.classList.remove('copied'), 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+        }
+      }
+    });
+  });
+
+  // Generate Table of Contents
+  const content = document.querySelector('.article-content');
+  const tocList = document.getElementById('toc-list');
+  const toc = document.getElementById('toc');
+
+  if (content && tocList && toc) {
+    const headings = content.querySelectorAll('h2, h3');
+
+    if (headings.length >= 2) {
+      headings.forEach((heading, index) => {
+        const id = `heading-${index}`;
+        heading.setAttribute('id', id);
+
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = `#${id}`;
+        a.textContent = heading.textContent;
+        a.className = heading.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+
+        li.appendChild(a);
+        tocList.appendChild(li);
+      });
+    } else {
+      toc.style.display = 'none';
+    }
+  }
+</script>
+
+<style>
+  /* Page Layout (for pages collection) */
+  .page-content {
+    padding-top: 64px;
+  }
+
+  @media (min-width: 768px) {
+    .page-content {
+      padding-top: 72px;
+    }
+  }
+
+  .page-container {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0;
+  }
+
+  .page-body {
+    width: 100%;
+  }
+
+  .page-body :global(p) {
+    margin: 0 0 20px;
+    font-size: 1.125rem;
+    line-height: 1.7;
+    color: #475569;
+  }
+
+  .page-body :global(h1),
+  .page-body :global(h2),
+  .page-body :global(h3) {
+    color: #1e293b;
+    font-weight: 700;
+  }
+
+  .page-body :global(a) {
+    color: #0284c7;
+    text-decoration: underline;
+  }
+
+  .page-body :global(img) {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Article Page Layout */
+  .article-page {
+    padding-top: 64px;
+  }
+
+  @media (min-width: 768px) {
+    .article-page {
+      padding-top: 72px;
+    }
+  }
+
+  /* Unified Grid Layout */
+  .article-layout {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px 16px 48px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  @media (min-width: 768px) {
+    .article-layout {
+      padding: 32px 24px 64px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .article-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 340px;
+      gap: 48px;
+      padding: 40px 32px 80px;
+      align-items: start;
+    }
+  }
+
+  /* Main Column */
+  .article-main {
+    min-width: 0;
+  }
+
+  /* Article Header */
+  .article-header {
+    margin-bottom: 32px;
+  }
+
+  .header-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .article-category {
+    padding: 3px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #fff;
+    background: var(--cat-color, #64748b);
+    border-radius: 4px;
+    text-decoration: none;
+    transition: opacity 0.15s ease;
+  }
+
+  .article-category:hover {
+    opacity: 0.85;
+  }
+
+  .header-separator {
+    color: #cbd5e1;
+    font-size: 12px;
+  }
+
+  .article-date {
+    font-size: 13px;
+    color: #64748b;
+  }
+
+  .article-title {
+    margin: 0 0 12px;
+    font-size: 1.625rem;
+    font-weight: 700;
+    color: #1e293b;
+    line-height: 1.25;
+  }
+
+  @media (min-width: 768px) {
+    .article-title {
+      font-size: 2rem;
+      margin-bottom: 14px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .article-title {
+      font-size: 2.25rem;
+    }
+  }
+
+  .header-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .meta-author {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .author-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: #e0f2fe;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .author-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .author-avatar span {
+    font-size: 12px;
+    font-weight: 600;
+    color: #0284c7;
+  }
+
+  .author-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: #475569;
+  }
+
+  .meta-read-time {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    color: #64748b;
+  }
+
+  .meta-read-time svg {
+    opacity: 0.7;
+  }
+
+  /* Cover Image */
+  .article-cover {
+    margin-top: 0;
+  }
+
+  .article-cover img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+
+  @media (min-width: 640px) {
+    .article-cover img {
+      height: 220px;
+      border-radius: 10px;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .article-cover img {
+      height: 260px;
+      border-radius: 12px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .article-cover img {
+      height: 280px;
+    }
+  }
+
+  .cover-placeholder {
+    width: 100%;
+    height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+    border-radius: 8px;
+    color: #94a3b8;
+  }
+
+  @media (min-width: 640px) {
+    .cover-placeholder {
+      height: 220px;
+      border-radius: 10px;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .cover-placeholder {
+      height: 260px;
+      border-radius: 12px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .cover-placeholder {
+      height: 280px;
+    }
+  }
+
+  /* Article Content - Prose */
+  .article-content {
+    max-width: 720px;
+    min-width: 0;
+  }
+
+  .article-content :global(h2) {
+    margin: 40px 0 16px;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    line-height: 1.3;
+  }
+
+  .article-content :global(h3) {
+    margin: 32px 0 12px;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1e293b;
+  }
+
+  .article-content :global(p) {
+    margin: 0 0 20px;
+    font-size: 1.125rem;
+    line-height: 1.7;
+    color: #475569;
+  }
+
+  .article-content :global(ul),
+  .article-content :global(ol) {
+    margin: 0 0 20px;
+    padding-left: 24px;
+  }
+
+  .article-content :global(li) {
+    margin-bottom: 8px;
+    font-size: 1.125rem;
+    line-height: 1.7;
+    color: #475569;
+  }
+
+  .article-content :global(ul li) {
+    list-style: disc;
+  }
+
+  .article-content :global(ol li) {
+    list-style: decimal;
+  }
+
+  .article-content :global(a) {
+    color: #0284c7;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    transition: color 0.15s ease;
+  }
+
+  .article-content :global(a:hover) {
+    color: #0369a1;
+  }
+
+  .article-content :global(blockquote) {
+    margin: 24px 0;
+    padding: 16px 24px;
+    border-left: 4px solid #0284c7;
+    background: #f8fafc;
+    border-radius: 0 8px 8px 0;
+  }
+
+  .article-content :global(blockquote p) {
+    margin: 0;
+    font-style: italic;
+    color: #1e293b;
+  }
+
+  .article-content :global(img) {
+    margin: 24px 0;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    max-width: 100%;
+    height: auto;
+  }
+
+  .article-content :global(pre) {
+    margin: 24px 0;
+    padding: 16px;
+    background: #1e293b;
+    border-radius: 12px;
+    overflow-x: auto;
+  }
+
+  .article-content :global(code) {
+    font-family: 'Fira Code', 'Consolas', monospace;
+    font-size: 0.9em;
+  }
+
+  .article-content :global(pre code) {
+    color: #f1f5f9;
+  }
+
+  .article-content :global(:not(pre) > code) {
+    padding: 2px 6px;
+    background: #f1f5f9;
+    border-radius: 4px;
+    color: #0369a1;
+  }
+
+  /* Sidebar */
+  .article-sidebar {
+    width: 100%;
+  }
+
+  .sidebar-sticky {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  /* Sticky only on desktop/tablet */
+  @media (min-width: 1024px) {
+    .sidebar-sticky {
+      position: sticky;
+      top: 96px; /* header height + padding */
+    }
+  }
+
+  .sidebar-share {
+    padding: 20px;
+    background: #f8fafc;
+    border-radius: 12px;
+  }
+
+  .sidebar-share h4 {
+    margin: 0 0 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .share-buttons {
+    display: flex;
+    gap: 8px;
+  }
+
+  .share-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .share-btn.linkedin {
+    background: #0077b5;
+    color: #fff;
+  }
+
+  .share-btn.twitter {
+    background: #000;
+    color: #fff;
+  }
+
+  .share-btn.whatsapp {
+    background: #25d366;
+    color: #fff;
+  }
+
+  .share-btn.copy {
+    background: #e2e8f0;
+    color: #475569;
+  }
+
+  .share-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+
+  .share-btn.copied {
+    background: #22c55e;
+    color: #fff;
+  }
+
+  .sidebar-toc {
+    padding: 20px;
+    background: #f8fafc;
+    border-radius: 12px;
+  }
+
+  .sidebar-toc h4 {
+    margin: 0 0 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .sidebar-toc ul {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .sidebar-toc :global(a) {
+    display: block;
+    font-size: 14px;
+    color: #475569;
+    text-decoration: none;
+    transition: color 0.15s ease;
+    line-height: 1.4;
+  }
+
+  .sidebar-toc :global(a:hover) {
+    color: #0284c7;
+  }
+
+  .sidebar-toc :global(a.toc-h3) {
+    padding-left: 16px;
+    font-size: 13px;
+    color: #64748b;
+  }
+
+  /* Related Posts */
+  .related-posts {
+    padding: 48px 0;
+    background: #f8fafc;
+  }
+
+  @media (min-width: 768px) {
+    .related-posts {
+      padding: 64px 0;
+    }
+  }
+
+  .related-container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 16px;
+  }
+
+  @media (min-width: 768px) {
+    .related-container {
+      padding: 0 24px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .related-container {
+      padding: 0 32px;
+    }
+  }
+
+  .related-posts h2 {
+    margin: 0 0 32px;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+  }
+
+  .related-grid {
+    display: grid;
+    gap: 24px;
+  }
+
+  @media (min-width: 640px) {
+    .related-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .related-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  /* Mobile adjustments */
+  @media (max-width: 480px) {
+    .article-title {
+      font-size: 1.5rem;
+    }
+
+    .article-excerpt {
+      font-size: 1rem;
+    }
+
+    .article-content :global(h2) {
+      font-size: 1.25rem;
+    }
+
+    .article-content :global(h3) {
+      font-size: 1.125rem;
+    }
+
+    .article-content :global(p),
+    .article-content :global(li) {
+      font-size: 1rem;
+    }
+  }
+</style>

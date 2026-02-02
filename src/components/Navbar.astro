@@ -1,0 +1,61 @@
+---
+import MobileMenu from './react/MobileMenu.jsx';
+---
+
+<nav class="navbar" id="navbar">
+  <div class="container nav-content">
+    <a href="/" class="logo">
+      <span class="logo-text">EVOLUTTO</span>
+      <span class="logo-dot">.</span>
+    </a>
+
+    <div class="nav-links">
+      <a href="/" class="nav-link">Blog</a>
+      <a href="https://evolutto.com.br" class="nav-link" target="_blank" rel="noopener noreferrer">
+        Site
+      </a>
+      <a href="https://evolutto.com.br/sobre" class="nav-link" target="_blank" rel="noopener noreferrer">
+        Sobre
+      </a>
+    </div>
+
+    <div class="nav-actions">
+      <a
+        href="https://app.evolutto.com.br"
+        class="btn btn-ghost hide-mobile nav-cta-btn"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></svg>
+        <span class="btn-text">Acessar Plataforma</span>
+      </a>
+      <a
+        href="https://evolutto.com.br/contato"
+        class="btn btn-primary hide-mobile nav-cta-btn"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
+        <span class="btn-text">Falar com Especialista</span>
+      </a>
+
+      <MobileMenu client:load />
+    </div>
+  </div>
+</nav>
+
+<script>
+  // Handle scroll state for navbar
+  const navbar = document.getElementById('navbar');
+
+  function handleScroll() {
+    if (window.scrollY > 50) {
+      navbar?.classList.add('scrolled');
+    } else {
+      navbar?.classList.remove('scrolled');
+    }
+  }
+
+  window.addEventListener('scroll', handleScroll);
+  handleScroll(); // Initial check
+</script>

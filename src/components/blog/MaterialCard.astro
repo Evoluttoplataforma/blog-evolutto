@@ -1,0 +1,150 @@
+---
+import type { Material } from '../../data/materials';
+import { getTypeLabel } from '../../data/materials';
+
+interface Props {
+  material: Material;
+}
+
+const { material } = Astro.props;
+const isExternal = material.href.startsWith('http');
+const typeLabel = getTypeLabel(material.type).toUpperCase();
+
+// Color mapping for different types
+const typeColors: Record<string, { bg: string; color: string }> = {
+  ebook: { bg: '#dbeafe', color: '#1e40af' },
+  template: { bg: '#dcfce7', color: '#166534' },
+  planilha: { bg: '#fef3c7', color: '#92400e' },
+  kit: { bg: '#f3e8ff', color: '#7c3aed' },
+  checklist: { bg: '#fce7f3', color: '#be185d' },
+  webinar: { bg: '#fee2e2', color: '#dc2626' },
+  calendario: { bg: '#cffafe', color: '#0891b2' },
+  ferramenta: { bg: '#e0e7ff', color: '#4338ca' },
+  infografico: { bg: '#fef9c3', color: '#a16207' },
+  curso: { bg: '#d1fae5', color: '#059669' },
+  relatorio: { bg: '#f1f5f9', color: '#475569' },
+  tutorial: { bg: '#ffedd5', color: '#c2410c' },
+  video: { bg: '#fee2e2', color: '#dc2626' },
+  podcast: { bg: '#fae8ff', color: '#a21caf' },
+  default: { bg: '#f1f5f9', color: '#64748b' },
+};
+
+const colors = typeColors[material.type] || typeColors.default;
+---
+
+<div
+  class="material-card"
+  data-material-id={material.id}
+  data-requires-lead={material.requiresLead}
+  data-href={material.href}
+  data-external={isExternal}
+>
+  <div class="material-thumb">
+    <img
+      src={material.thumbnail}
+      alt={material.title}
+      loading="lazy"
+      onerror="this.src='/images/placeholder-material.jpg'"
+    />
+    {material.requiresLead && (
+      <div class="download-overlay">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="7 10 12 15 17 10" />
+          <line x1="12" y1="15" x2="12" y2="3" />
+        </svg>
+      </div>
+    )}
+  </div>
+  <div class="material-content">
+    <span class="material-tag" style={`background: ${colors.bg}; color: ${colors.color};`}>
+      {typeLabel}
+    </span>
+    <h3 class="material-title">{material.title}</h3>
+  </div>
+</div>
+
+<style>
+  .material-card {
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+
+  .material-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+  }
+
+  .material-thumb {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: #f1f5f9;
+  }
+
+  .material-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+  .material-card:hover .material-thumb img {
+    transform: scale(1.05);
+  }
+
+  .download-overlay {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    color: #0ea5e9;
+    transition: all 0.2s ease;
+  }
+
+  .material-card:hover .download-overlay {
+    background: #0ea5e9;
+    color: #fff;
+    transform: scale(1.1);
+  }
+
+  .material-content {
+    padding: 16px;
+  }
+
+  .material-tag {
+    display: inline-block;
+    padding: 4px 8px;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    border-radius: 4px;
+    margin-bottom: 8px;
+  }
+
+  .material-title {
+    margin: 0;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: #1e293b;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+</style>

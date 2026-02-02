@@ -1,0 +1,385 @@
+---
+interface Props {
+  title: string;
+  slug: string;
+  excerpt?: string;
+  coverImage?: string;
+  category?: string;
+  categorySlug?: string;
+  date?: Date;
+  readTime?: number;
+  featured?: boolean;
+  variant?: 'default' | 'horizontal' | 'featured';
+}
+
+const {
+  title,
+  slug,
+  excerpt,
+  coverImage,
+  category,
+  categorySlug,
+  date,
+  readTime,
+  featured = false,
+  variant = 'default',
+} = Astro.props;
+
+// Category colors
+const categoryColors: Record<string, string> = {
+  marketing: 'var(--cat-marketing)',
+  vendas: 'var(--cat-vendas)',
+  gestao: 'var(--cat-gestao)',
+  tecnologia: 'var(--cat-tecnologia)',
+  estrategia: 'var(--cat-estrategia)',
+  empreendedorismo: 'var(--cat-empreendedorismo)',
+  produtividade: 'var(--cat-produtividade)',
+  lideranca: 'var(--cat-lideranca)',
+  inovacao: 'var(--cat-inovacao)',
+  financas: 'var(--cat-financas)',
+  digitalizacao: 'var(--cat-tecnologia)',
+  escala: 'var(--cat-estrategia)',
+  produtizacao: 'var(--cat-produtividade)',
+};
+
+const catColor = categorySlug ? categoryColors[categorySlug.toLowerCase()] || 'var(--cat-default)' : 'var(--cat-default)';
+
+// Format date
+const formattedDate = date ? new Intl.DateTimeFormat('pt-BR', {
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+}).format(date) : null;
+
+// Check if we have a valid cover image
+const hasImage = coverImage && coverImage.trim() !== '';
+---
+
+<article class:list={['post-card', `variant-${variant}`, { featured }]} style={`--cat-color: ${catColor}`}>
+  <a href={`/${slug}`} class="card-link" aria-label={`Ler artigo: ${title}`}>
+    <div class="card-image">
+      {hasImage ? (
+        <img
+          src={coverImage}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
+        />
+        <div class="card-placeholder" style="display:none;">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+            <polyline points="21 15 16 10 5 21"></polyline>
+          </svg>
+        </div>
+      ) : (
+        <div class="card-placeholder">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+            <polyline points="21 15 16 10 5 21"></polyline>
+          </svg>
+        </div>
+      )}
+      {category && (
+        <span class="card-category">
+          {category}
+        </span>
+      )}
+    </div>
+
+    <div class="card-content">
+      <h3 class="card-title">{title}</h3>
+
+      {excerpt && (
+        <p class="card-excerpt">{excerpt}</p>
+      )}
+
+      <div class="card-meta">
+        {formattedDate && (
+          <span class="meta-date">{formattedDate}</span>
+        )}
+        {readTime && (
+          <span class="meta-read-time">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            {readTime} min
+          </span>
+        )}
+      </div>
+    </div>
+  </a>
+</article>
+
+<style>
+  .post-card {
+    position: relative;
+    background: var(--bg-primary, #fff);
+    border-radius: var(--radius-lg, 12px);
+    overflow: hidden;
+    box-shadow: var(--shadow-card, 0 2px 8px rgba(0, 0, 0, 0.08));
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    height: 100%;
+  }
+
+  .post-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-card-hover, 0 8px 24px rgba(0, 0, 0, 0.12));
+  }
+
+  .card-link {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .card-image {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: var(--bg-tertiary, #f1f5f9);
+    flex-shrink: 0;
+  }
+
+  .card-image img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+  .post-card:hover .card-image img {
+    transform: scale(1.05);
+  }
+
+  .card-placeholder {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--bg-tertiary, #f1f5f9) 0%, var(--bg-secondary, #e2e8f0) 100%);
+    color: var(--text-muted, #94a3b8);
+  }
+
+  .card-category {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    padding: 4px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #fff;
+    background: var(--cat-color, var(--cat-default, #64748b));
+    border-radius: 9999px;
+    z-index: 2;
+  }
+
+  .card-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding: 20px;
+    min-height: 0;
+  }
+
+  .card-title {
+    margin: 0 0 8px;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--text-primary, #1e293b);
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-break: break-word;
+    transition: color 0.15s ease;
+  }
+
+  .post-card:hover .card-title {
+    color: var(--color-primary-600, #0095d0);
+  }
+
+  .card-excerpt {
+    margin: 0 0 16px;
+    font-size: 0.875rem;
+    color: var(--text-secondary, #475569);
+    line-height: 1.6;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-break: break-word;
+    flex: 1;
+    min-height: 0;
+  }
+
+  .card-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 12px;
+    color: var(--text-muted, #64748b);
+    margin-top: auto;
+  }
+
+  .meta-date {
+    text-transform: capitalize;
+  }
+
+  .meta-read-time {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .meta-read-time svg {
+    flex-shrink: 0;
+  }
+
+  /* Horizontal Variant */
+  .variant-horizontal .card-link {
+    flex-direction: row;
+  }
+
+  .variant-horizontal .card-image {
+    width: 200px;
+    min-width: 200px;
+    aspect-ratio: 4 / 3;
+  }
+
+  .variant-horizontal .card-content {
+    padding: 16px 20px;
+  }
+
+  @media (max-width: 639px) {
+    .variant-horizontal .card-link {
+      flex-direction: column;
+    }
+
+    .variant-horizontal .card-image {
+      width: 100%;
+      min-width: 100%;
+      aspect-ratio: 16 / 9;
+    }
+
+    .variant-horizontal .card-content {
+      padding: 20px;
+    }
+  }
+
+  /* Featured Variant */
+  .variant-featured {
+    grid-column: span 2;
+  }
+
+  .variant-featured .card-link {
+    flex-direction: row;
+  }
+
+  .variant-featured .card-image {
+    width: 60%;
+    min-width: 60%;
+    aspect-ratio: 3 / 2;
+  }
+
+  .variant-featured .card-content {
+    padding: 24px;
+    justify-content: center;
+  }
+
+  .variant-featured .card-title {
+    font-size: 1.5rem;
+    -webkit-line-clamp: 3;
+  }
+
+  .variant-featured .card-excerpt {
+    font-size: 1rem;
+    -webkit-line-clamp: 3;
+  }
+
+  @media (max-width: 767px) {
+    .variant-featured {
+      grid-column: span 1;
+    }
+
+    .variant-featured .card-link {
+      flex-direction: column;
+    }
+
+    .variant-featured .card-image {
+      width: 100%;
+      min-width: 100%;
+      aspect-ratio: 16 / 9;
+    }
+
+    .variant-featured .card-content {
+      padding: 20px;
+    }
+
+    .variant-featured .card-title {
+      font-size: 1.25rem;
+    }
+
+    .variant-featured .card-excerpt {
+      font-size: 0.875rem;
+    }
+  }
+
+  /* Featured badge */
+  .featured::before {
+    content: 'Destaque';
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 4px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #92400e;
+    background: #fbbf24;
+    border-radius: 9999px;
+    z-index: 3;
+  }
+
+  /* Mobile adjustments */
+  @media (max-width: 480px) {
+    .card-content {
+      padding: 16px;
+    }
+
+    .card-title {
+      font-size: 1rem;
+    }
+
+    .card-excerpt {
+      font-size: 0.8125rem;
+      -webkit-line-clamp: 2;
+    }
+
+    .card-meta {
+      font-size: 11px;
+      gap: 12px;
+    }
+
+    .card-category {
+      font-size: 10px;
+      padding: 3px 10px;
+    }
+  }
+</style>

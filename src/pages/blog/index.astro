@@ -1,0 +1,249 @@
+---
+import { getCollection } from 'astro:content';
+import BlogLayout from '../../layouts/BlogLayout.astro';
+import BlogHero from '../../components/blog/BlogHero.astro';
+import EventsSection from '../../components/blog/EventsSection.astro';
+import DemosSection from '../../components/blog/DemosSection.astro';
+import MaterialsSection from '../../components/blog/MaterialsSection';
+import FeaturedPosts from '../../components/blog/FeaturedPosts.astro';
+import CategoryChips from '../../components/blog/CategoryChips.astro';
+import PostGrid from '../../components/blog/PostGrid.astro';
+import { getAllMaterials } from '../../data/materials';
+
+// Get materials data
+const materials = getAllMaterials();
+
+// Get all blog posts
+const allPosts = await getCollection('blog');
+
+// Sort by date (newest first)
+const sortedPosts = allPosts.sort((a, b) => {
+  const dateA = a.data.date ? new Date(a.data.date).getTime() : 0;
+  const dateB = b.data.date ? new Date(b.data.date).getTime() : 0;
+  return dateB - dateA;
+});
+
+// Helper to get full image URL
+function getImageUrl(image?: string): string | undefined {
+  if (!image) return undefined;
+  if (image.startsWith('http') || image.startsWith('/')) return image;
+  return `/images/${image}`;
+}
+
+// Transform posts for components
+const transformedPosts = sortedPosts.map((post) => ({
+  title: post.data.title,
+  slug: post.slug,
+  excerpt: post.data.excerpt || post.data.description || '',
+  coverImage: getImageUrl(post.data.coverImage || post.data.image),
+  category: post.data.categories?.[0] || 'Geral',
+  categorySlug: post.data.categories?.[0]?.toLowerCase().replace(/\s+/g, '-') || 'geral',
+  date: post.data.date,
+  readTime: post.data.readTime || 5,
+}));
+
+// Get featured posts (first 3)
+const featuredPosts = transformedPosts.slice(0, 3);
+
+// Get remaining posts for grid
+const gridPosts = transformedPosts.slice(3, 15);
+
+// Extract unique categories with counts
+const categoryMap = new Map<string, { name: string; slug: string; count: number }>();
+
+sortedPosts.forEach((post) => {
+  const cats = post.data.categories || ['Geral'];
+  cats.forEach((cat: string) => {
+    const slug = cat.toLowerCase().replace(/\s+/g, '-');
+    if (categoryMap.has(slug)) {
+      categoryMap.get(slug)!.count++;
+    } else {
+      categoryMap.set(slug, { name: cat, slug, count: 1 });
+    }
+  });
+});
+
+// Sort categories by count and take top 8
+const categories = Array.from(categoryMap.values())
+  .sort((a, b) => b.count - a.count)
+  .slice(0, 8);
+---
+
+<BlogLayout
+  title="Blog"
+  description="Artigos, dicas e estrategias para consultores que querem escalar seus negocios com a Evolutto."
+  currentPath="/blog"
+>
+  <BlogHero
+    title="Blog Evolutto"
+    subtitle="Conteudos para impulsionar sua consultoria e acelerar resultados"
+    ctaText="Conheca a Evolutto"
+    ctaUrl="https://evolutto.com.br"
+  />
+
+  <EventsSection />
+
+  <DemosSection />
+
+  <MaterialsSection client:load materials={materials} />
+
+  <FeaturedPosts posts={featuredPosts} title="Artigos em Destaque" />
+
+  <section class="blog-main">
+    <div class="blog-container">
+      <CategoryChips categories={categories} />
+
+      <PostGrid
+        posts={gridPosts}
+        title="Ultimos Artigos"
+        showLoadMore={true}
+      />
+    </div>
+  </section>
+
+  <!-- Newsletter CTA Section -->
+  <section class="newsletter-section">
+    <div class="newsletter-container">
+      <div class="newsletter-content">
+        <h2>Receba conteudos exclusivos</h2>
+        <p>Inscreva-se e receba dicas, estrategias e novidades diretamente no seu email.</p>
+      </div>
+      <form class="newsletter-form" action="#" method="POST">
+        <input
+          type="email"
+          name="email"
+          placeholder="Seu melhor email"
+          required
+          class="newsletter-input"
+        />
+        <button type="submit" class="newsletter-btn">
+          Inscrever-se
+        </button>
+      </form>
+    </div>
+  </section>
+</BlogLayout>
+
+<style>
+  .blog-main {
+    padding: var(--space-12) 0;
+    background: var(--bg-primary);
+  }
+
+  .blog-container {
+    max-width: var(--container-xl);
+    margin: 0 auto;
+    padding: 0 var(--space-4);
+  }
+
+  @media (min-width: 768px) {
+    .blog-container {
+      padding: 0 var(--space-6);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .blog-container {
+      padding: 0 var(--space-8);
+    }
+  }
+
+  .newsletter-section {
+    background: linear-gradient(135deg, var(--color-primary-600) 0%, var(--color-primary-800) 100%);
+    padding: var(--space-12) 0;
+  }
+
+  .newsletter-container {
+    max-width: var(--container-lg);
+    margin: 0 auto;
+    padding: 0 var(--space-4);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-6);
+    text-align: center;
+  }
+
+  @media (min-width: 768px) {
+    .newsletter-container {
+      flex-direction: row;
+      text-align: left;
+      padding: 0 var(--space-6);
+    }
+  }
+
+  .newsletter-content {
+    flex: 1;
+  }
+
+  .newsletter-content h2 {
+    margin: 0 0 var(--space-2);
+    font-size: var(--text-2xl);
+    font-weight: var(--font-bold);
+    color: var(--text-inverse);
+  }
+
+  @media (min-width: 768px) {
+    .newsletter-content h2 {
+      font-size: var(--text-3xl);
+    }
+  }
+
+  .newsletter-content p {
+    margin: 0;
+    font-size: var(--text-base);
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .newsletter-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    width: 100%;
+    max-width: 400px;
+  }
+
+  @media (min-width: 480px) {
+    .newsletter-form {
+      flex-direction: row;
+    }
+  }
+
+  .newsletter-input {
+    flex: 1;
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--text-base);
+    color: var(--text-primary);
+    background: var(--bg-primary);
+    border: none;
+    border-radius: var(--radius-md);
+    outline: none;
+  }
+
+  .newsletter-input::placeholder {
+    color: var(--text-muted);
+  }
+
+  .newsletter-input:focus {
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+  }
+
+  .newsletter-btn {
+    padding: var(--space-3) var(--space-6);
+    font-size: var(--text-base);
+    font-weight: var(--font-semibold);
+    font-family: var(--font-sans);
+    color: var(--color-primary-700);
+    background: var(--text-inverse);
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all var(--transition-fast);
+  }
+
+  .newsletter-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-lg);
+  }
+</style>

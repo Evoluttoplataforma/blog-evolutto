@@ -1,0 +1,17 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import RegistroApp from '../../components/admin/RegistroApp';
+
+export function getStaticPaths() {
+  return [
+    { params: { path: undefined } },
+    { params: { path: 'dashboard' } },
+    { params: { path: 'novo' } },
+    { params: { path: 'editar/placeholder' } },
+  ];
+}
+---
+
+<AdminLayout title="Portal do Colaborador">
+  <RegistroApp client:only="react" />
+</AdminLayout>

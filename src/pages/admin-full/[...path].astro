@@ -1,0 +1,17 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import AdminFullApp from '../../components/admin/AdminFullApp';
+
+export function getStaticPaths() {
+  return [
+    { params: { path: undefined } },
+    { params: { path: 'artigos' } },
+    { params: { path: 'colaboradores' } },
+    { params: { path: 'artigo/placeholder' } },
+  ];
+}
+---
+
+<AdminLayout title="Admin - Evolutto">
+  <AdminFullApp client:only="react" />
+</AdminLayout>

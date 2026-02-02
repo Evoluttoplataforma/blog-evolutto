@@ -1,0 +1,39 @@
+---
+import BlogLayout from '../../../../layouts/BlogLayout.astro';
+import ResourceHero from '../../../../components/recursos/ResourceHero.astro';
+import ResourceGrid from '../../../../components/recursos/ResourceGrid';
+import { resourcePageConfigs } from '../../../../data/freeResources';
+import { getMarketingDemos } from '../../../../data/demosMarketing';
+
+const config = resourcePageConfigs.marketing;
+const resources = getMarketingDemos();
+
+const breadcrumbs = [
+  { label: 'Home', href: '/' },
+  { label: 'Recursos Gratuitos', href: '/recursos-gratuitos' },
+  { label: 'Demonstrações de Marketing' },
+];
+---
+
+<BlogLayout
+  title="Demonstrações de Marketing"
+  description={config.description}
+  currentPath="/recursos-gratuitos/demonstracoes/marketing"
+>
+  <ResourceHero
+    breadcrumbs={breadcrumbs}
+    eyebrow={config.eyebrow}
+    title={config.title}
+    description={config.description}
+    ctaPrimary={config.ctaPrimary}
+    ctaSecondary={config.ctaSecondary}
+    heroImage={config.heroImage}
+  />
+
+  <ResourceGrid
+    client:load
+    resources={resources}
+    categories={config.categories}
+    basePath={config.basePath}
+  />
+</BlogLayout>
